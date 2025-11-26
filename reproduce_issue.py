@@ -1,33 +1,48 @@
-import sys
 import os
+import sys
+import glob
+from datetime import datetime
+from openai import OpenAI
 
-emoji = "\U0001f50d" # 🔍
+# --- CONFIGURATION ---
+# Use Ollama (Local/Free) or change to OpenAI if you prefer
+client = OpenAI(
+    base_url='http://localhost:11434/v1',
+    api_key='ollama',
+)
+MODEL = "llama3" 
 
-print(f"Attempting to print emoji: {emoji}")
+JOURNAL_DIR = "journal_entries"
 
-try:
-    print(f"Printed: {emoji}")
-except UnicodeEncodeError as e:
-    print(f"Caught expected error printing: {e}")
-except Exception as e:
-    print(f"Caught unexpected error printing: {e}")
+def ensure_dir():
+    if not os.path.exists(JOURNAL_DIR):
+        os.makedirs(JOURNAL_DIR)
 
-filename = "test_unicode.md"
-content = f"""
-# Journal Entry
-## {emoji} Check
-"""
+def get_last_session_content():
+    """
+    Reads the content of the most recent markdown file.
+    """
+    files = sorted(glob.glob(os.path.join(JOURNAL_DIR, "*.md")))
+    if not files:
+        return "No previous journal entries found."
+    
+    last_file = files[-1]
+    with open(last_file, 'r', encoding='utf-8') as f:
+        return f.read()
 
-print(f"Attempting to write emoji to file: {filename}")
-try:
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(content)
-    print("Successfully wrote to file.")
-except UnicodeEncodeError as e:
-    print(f"Caught expected error writing to file: {e}")
-except Exception as e:
-    print(f"Caught unexpected error writing to file: {e}")
+def chat_with_future_self(last_session_content):
+    """
+    Conducts a conversation with the AI acting as the user's future self.
+    """
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    print(f"\n🔮 \033[1mCONVERSATION WITH FUTURE SELF: {date_str}\033[0m")
+    print("-" * 50)
+    
+    print(f"\n🤖 \033[1mAI (Your Future Self):\033[0m Hello past self. I've reviewed your last journal entry:\n")
+    print(f"\033[3m{last_session_content}\033[0m\n")
+    
+    print("What's on your mind today? Any questions for me, your future self, or anything you want to reflect on?")
+    user_reflection = input("YOU > ")
 
-# Clean up
-if os.path.exists(filename):
-    os.remove(filename)
+    print(f"\n🤖 \033[1mAI (Your Future Self):\033[0m Interesting. Let me think about that from my perspective. What are your biggest hopes or fears right now regarding your goals?")
+    user_hopes_f
